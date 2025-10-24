@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-import math
 import time
 
 # Mediapipe 초기화
