@@ -5,9 +5,6 @@ from ultralytics import YOLO
 import mediapipe as mp
 import numpy as np
 
-# ----------------------------
-# YOLO 모델 로드
-# ----------------------------
 model = YOLO('yolov8s.pt')
 classnames = []
 with open('classes.txt', 'r') as f:
