@@ -87,12 +87,12 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
     last_flash_time = 0.0
     flash_interval = 0.5          # 초 단위 간격
 
-    # resume window state
+    # tracking lost 후 돌아올 때 복원 위한 상태 변수
     RESUME_GRACE_SEC = 5.0
     paused_elapsed = 0.0
     last_tracking_lost_time = None
     was_in_fall_when_lost = False
-    # resume window for classification-based exit
+    # classification flip 이후 복원 위한 상태 변수
     last_fall_ended_time = None
     was_in_fall_when_ended = False
     paused_elapsed_end = 0.0
@@ -118,7 +118,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             current_time = time.time()
 
             # 디바운스 및 상태 확정/유지
-            # resume within grace if we lost tracking during fall
+            # 낙상 중 추적이 끊기더라도 일정 허용 범위 (현재 5초) 내에서 추적 복원 -> 낙상 시간 유지
             if (not fall_state) and was_in_fall_when_lost and last_tracking_lost_time is not None and (current_time - last_tracking_lost_time) <= RESUME_GRACE_SEC:
                 if fall_condition:
                     fall_state = True
@@ -135,7 +135,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             # normal state update
             if fall_state:
                 if not fall_condition:
-                    # record pause info on classification-based exit
+                    # classification-based exit 에서 마지막 상태 기록
                     if fall_state_since is not None:
                         paused_elapsed_end = max(0.0, current_time - fall_state_since)
                     else:
@@ -155,7 +155,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 else:
                     fall_candidate_since = None
 
-            # resume within grace if we briefly exited fall (classification flip)
+            # 낙상 중 잠시 자세가 바뀌거나 분류가 뒤집혀도 (classification flip) 일정 허용 범위 (현재 5초) 내에서 낙상 시간 유지
             if (not fall_state) and was_in_fall_when_ended and last_fall_ended_time is not None and (current_time - last_fall_ended_time) <= RESUME_GRACE_SEC:
                 if fall_condition:
                     fall_state = True
@@ -226,7 +226,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     was_in_fall_when_lost = False
                     last_tracking_lost_time = None
                     paused_elapsed = 0.0
-            # clear classification-resume flags on tracking loss path
+            # 추적 끊길 시에 분류 복원 관련 변수 (flags) 초기화
             was_in_fall_when_ended = False
             last_fall_ended_time = None
             paused_elapsed_end = 0.0
