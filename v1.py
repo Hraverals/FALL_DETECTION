@@ -62,7 +62,7 @@ def is_fall_condition_met(keypoints):
     except:
         return False
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('fall_final.mp4')
 
 # 포즈 객체 초기화
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
